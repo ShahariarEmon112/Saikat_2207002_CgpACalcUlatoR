@@ -1,0 +1,56 @@
+[
+  {
+    "id": 20,
+    "courseName": "Web Development",
+    "courseCode": "CSC401",
+    "grade": "A-",
+    "creditHours": 4.0,
+    "teacher1Name": "Dr. Hassan",
+    "teacher2Name": "Ms. Zara"
+  },
+  {
+    "id": 19,
+    "courseName": "Database Design",
+    "courseCode": "CSC301",
+    "grade": "B+",
+    "creditHours": 3.5,
+    "teacher1Name": "Prof. Khan",
+    "teacher2Name": "Dr. Noor"
+  },
+  {
+    "id": 18,
+    "courseName": "Data Structures",
+    "courseCode": "CSC201",
+    "grade": "A",
+    "creditHours": 3.0,
+    "teacher1Name": "Dr. Ahmed",
+    "teacher2Name": "Dr. Fatima"
+  },
+  {
+    "id": 17,
+    "courseName": "cd \u0027e:\\downloads\\Saikat_2207002_CgpACalcUlator\\Saikat_2207002_CgpACalcUlatoR\u0027 ; \u0026 \u0027.\\test-program-run.bat\u0027",
+    "courseCode": "hv",
+    "grade": "A",
+    "creditHours": 5.0,
+    "teacher1Name": "ae",
+    "teacher2Name": "ae"
+  },
+  {
+    "id": 16,
+    "courseName": "Database Systems",
+    "courseCode": "CSC201",
+    "grade": "B+",
+    "creditHours": 3.5,
+    "teacher1Name": "Dr. Karim",
+    "teacher2Name": "Dr. Noor"
+  },
+  {
+    "id": 15,
+    "courseName": "Object Oriented Programming",
+    "courseCode": "CSC101",
+    "grade": "A",
+    "creditHours": 3.0,
+    "teacher1Name": "Dr. Hassan",
+    "teacher2Name": "Prof. Fatima"
+  }
+]

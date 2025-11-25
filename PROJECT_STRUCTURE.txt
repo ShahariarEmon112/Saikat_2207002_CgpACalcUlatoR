@@ -1,0 +1,346 @@
+================================================================================
+           GPA CALCULATOR - PROJECT STRUCTURE & QUICK REFERENCE
+                      Saikat (ID: 2207002)
+================================================================================
+
+PROJECT DIRECTORY STRUCTURE:
+================================================================================
+
+Saikat_2207002_CgpACalcUlatoR/
+│
+├── src/
+│   ├── Main.java                      (UI & Application entry point)
+│   ├── Course.java                    (Data model with database support)
+│   ├── GPACalculator.java             (GPA calculation logic)
+│   ├── DatabaseManager.java           (NEW: SQLite database operations)
+│   ├── JSONHandler.java               (NEW: JSON serialization)
+│   └── DatabaseTestStandalone.java    (NEW: Test suite)
+│
+├── build/                             (Compiled .class files)
+│   ├── Course.class
+│   ├── GPACalculator.class
+│   ├── Main.class
+│   ├── DatabaseManager.class
+│   ├── JSONHandler.class
+│   └── DatabaseTestStandalone.class
+│
+├── lib/                               (External dependencies)
+│   ├── sqlite-jdbc-3.44.0.0.jar      (SQLite JDBC driver)
+│   ├── gson-2.10.1.jar               (JSON library)
+│   ├── slf4j-api-2.0.9.jar           (Logging API)
+│   └── slf4j-nop-2.0.9.jar           (Logging implementation)
+│
+├── target/                            (Maven build artifacts)
+│   ├── classes/
+│   ├── libs/
+│   └── ...
+│
+├── pom.xml                            (Maven configuration)
+├── build-jar.bat                      (Build script)
+├── run.bat                            (Run script)
+├── run.sh                             (Shell run script)
+├── setup-and-run.bat                  (Setup and run script)
+├── test-database-standalone.bat       (NEW: Standalone test script)
+│
+├── README.md                          (Project documentation)
+├── SETUP_GUIDE.md                     (Setup instructions)
+├── TEST_RUN_REPORT.txt                (NEW: This test report)
+│
+├── gpa_calculator.db                  (NEW: SQLite database)
+├── courses_export.json                (NEW: JSON export file)
+│
+└── .git/                              (Git repository)
+
+================================================================================
+CLASS OVERVIEW:
+================================================================================
+
+1. Course.java
+   Purpose: Data model representing a university course
+   Key Methods:
+     - Constructor(name, code, grade, credits, teacher1, teacher2)
+     - Constructor(id, name, code, grade, credits, teacher1, teacher2)
+     - getId(), setId(id)
+     - getCourseName(), setCourseName()
+     - getGrade(), setGrade()
+     - getGradePoint(), getQualityPoints()
+     - Getters/Setters for all fields
+
+2. GPACalculator.java
+   Purpose: Business logic for GPA calculation
+   Key Methods:
+     - addCourse(course): Add course to list
+     - calculateGPA(): Calculate and return GPA
+     - getTotalCreditHours(): Get total credit hours
+     - getCourses(): Get all courses
+     - removeCourse(index): Remove course by index
+     - clearCourses(): Clear all courses
+
+3. DatabaseManager.java (NEW)
+   Purpose: SQLite database operations with concurrency
+   Key Features:
+     - Database URL: jdbc:sqlite:gpa_calculator.db
+     - Thread pool: ExecutorService with 3 threads
+     - Timeout: 10 seconds for shutdown
+   Key Methods:
+     - insertCourse(course): Insert new course
+     - insertCourseAsync(course): Async insert
+     - getAllCourses(): Get all courses from DB
+     - getAllCoursesAsync(): Async get all
+     - getCourseById(id): Get single course
+     - updateCourse(course): Update course
+     - updateCourseAsync(course): Async update
+     - deleteCourse(id): Delete course
+     - deleteCourseAsync(id): Async delete
+     - deleteAllCourses(): Clear database
+     - getCourseCount(): Get total courses
+     - testConnection(): Verify DB connection
+
+4. JSONHandler.java (NEW)
+   Purpose: JSON serialization/deserialization with Gson
+   Key Methods:
+     - exportToJSON(courses, filePath): Export to JSON file
+     - importFromJSON(filePath): Import from JSON file
+     - courseToJSON(course): Convert course to JSON string
+     - jsonToCourse(json): Convert JSON string to course
+     - coursesListToJSON(courses): Convert list to JSON
+     - jsonToCourseLis(json): Convert JSON to list
+
+5. Main.java
+   Purpose: JavaFX application UI
+   Key Sections:
+     - Home screen with welcome message
+     - Main calculator screen with:
+       * Course input panel on right
+       * Course table display on left
+       * Database operation buttons
+       * JSON import/export buttons
+     - GPA result certificate screen
+   New Methods:
+     - saveCoursesToDatabase()
+     - loadCoursesFromDatabase()
+     - exportCoursesAsJSON()
+     - importCoursesFromJSON()
+
+================================================================================
+DATABASE SCHEMA:
+================================================================================
+
+Table: courses
+Columns:
+  - id (INTEGER PRIMARY KEY AUTOINCREMENT)
+  - courseName (TEXT NOT NULL)
+  - courseCode (TEXT NOT NULL)
+  - grade (TEXT NOT NULL)
+  - creditHours (REAL NOT NULL)
+  - teacher1Name (TEXT NOT NULL)
+  - teacher2Name (TEXT NOT NULL)
+  - createdAt (TIMESTAMP DEFAULT CURRENT_TIMESTAMP)
+
+Example Record:
+  id=1, courseName="Data Structures", courseCode="CSC203",
+  grade="A+", creditHours=3.5, teacher1Name="Dr. Ahmed",
+  teacher2Name="Dr. Fatima", createdAt="2025-11-25 23:49:01"
+
+================================================================================
+RUNNING THE APPLICATION:
+================================================================================
+
+Option 1: Using Batch Script (Windows)
+  > run.bat
+
+Option 2: Using Shell Script (Linux/Mac)
+  $ bash run.sh
+
+Option 3: Manual Compilation & Execution
+  $ javac -cp "lib/*" src/*.java
+  $ java -cp "src;lib/*" Main
+
+Option 4: Run Tests Only
+  > test-database-standalone.bat
+
+================================================================================
+DATABASE OPERATIONS EXAMPLES:
+================================================================================
+
+1. Insert a Course:
+   Course course = new Course("AI & Machine Learning", "CSC501", 
+                              "A", 4.0, "Dr. Khan", "Prof. Sara");
+   DatabaseManager db = new DatabaseManager();
+   int id = db.insertCourse(course);
+
+2. Retrieve All Courses:
+   List<Course> courses = db.getAllCourses();
+   for (Course c : courses) {
+       System.out.println(c.getCourseName());
+   }
+
+3. Update a Course:
+   Course course = db.getCourseById(1);
+   course.setGrade("A+");
+   db.updateCourse(course);
+
+4. Delete a Course:
+   db.deleteCourse(1);
+
+5. Concurrent Insert:
+   CompletableFuture<Integer> future = 
+       db.insertCourseAsync(new Course(...));
+   Integer id = future.get(); // Wait for result
+
+6. Export to JSON:
+   List<Course> courses = db.getAllCourses();
+   JSONHandler.exportToJSON(courses, "export.json");
+
+7. Import from JSON:
+   List<Course> courses = JSONHandler.importFromJSON("export.json");
+
+================================================================================
+DEPENDENCIES & LIBRARIES:
+================================================================================
+
+Maven Dependencies (pom.xml):
+  - org.openjfx:javafx-controls:21.0.1
+  - org.openjfx:javafx-graphics:21.0.1
+  - org.openjfx:javafx-fxml:21.0.1
+  - org.xerial:sqlite-jdbc:3.44.0.0
+  - com.google.code.gson:gson:2.10.1
+  - org.slf4j:slf4j-api:2.0.9
+  - org.slf4j:slf4j-nop:2.0.9
+  - junit:junit:4.13.2
+
+JAR Files Required:
+  - sqlite-jdbc-3.44.0.0.jar (13.3 MB)
+  - gson-2.10.1.jar (283 KB)
+  - slf4j-api-2.0.9.jar
+  - slf4j-nop-2.0.9.jar
+
+================================================================================
+TROUBLESHOOTING:
+================================================================================
+
+1. "No suitable driver found for jdbc:sqlite:"
+   Solution: Ensure sqlite-jdbc JAR is in classpath
+
+2. "ClassNotFoundException: org.slf4j.LoggerFactory"
+   Solution: Add slf4j-api and slf4j-nop JARs to lib/
+
+3. "Permission denied" on .bat files
+   Solution: Run PowerShell as Administrator
+
+4. Database file not created
+   Solution: Check write permissions in project directory
+
+5. JSON import fails
+   Solution: Ensure JSON file exists in project root
+
+================================================================================
+TESTING COMMANDS:
+================================================================================
+
+Run Complete Test Suite:
+  > test-database-standalone.bat
+
+Run Individual Tests:
+  Database only: java -cp "build;lib/*" DatabaseTestStandalone
+
+Compile Only:
+  javac -cp "build;lib/*" -d build src/*.java
+
+Clean Build:
+  rd /s /q build
+  mkdir build
+  javac -cp "lib/*" -d build src/*.java
+
+View Database:
+  SQLite command line tool recommended:
+  sqlite3 gpa_calculator.db
+  .tables
+  SELECT * FROM courses;
+
+View JSON Export:
+  type courses_export.json
+
+================================================================================
+KEY FEATURES SUMMARY:
+================================================================================
+
+✓ Database Support
+  - SQLite with auto-incrementing IDs
+  - Full CRUD operations
+  - Transaction support
+  - Clean connection management
+
+✓ JSON Support
+  - Full serialization/deserialization
+  - Pretty printing with indentation
+  - Export/import functionality
+  - Error handling
+
+✓ Concurrency
+  - Thread pool executor (3 threads)
+  - CompletableFuture for async operations
+  - No blocking on I/O
+  - Proper resource cleanup
+
+✓ Observable Collections
+  - Real-time UI updates
+  - Automatic table refresh
+  - Event listeners for data changes
+  - Reactive programming support
+
+✓ Error Handling
+  - Try-catch blocks in all operations
+  - Proper exception propagation
+  - User-friendly error messages
+  - Logging for debugging
+
+================================================================================
+GIT COMMIT RECOMMENDATIONS:
+================================================================================
+
+Commit 1: Database Infrastructure
+  Files: DatabaseManager.java, pom.xml (sqlite deps)
+  Message: "Add SQLite database support with CRUD operations"
+
+Commit 2: JSON Support
+  Files: JSONHandler.java, pom.xml (gson deps)
+  Message: "Add JSON import/export functionality with Gson"
+
+Commit 3: Model Updates
+  Files: Course.java
+  Message: "Add database ID field and getters/setters to Course"
+
+Commit 4: UI Integration
+  Files: Main.java
+  Message: "Integrate database and JSON operations into UI"
+
+Commit 5: Testing
+  Files: DatabaseTestStandalone.java, test-database-standalone.bat
+  Message: "Add comprehensive test suite for all features"
+
+Commit 6: Configuration
+  Files: pom.xml (complete), README.md
+  Message: "Update dependencies and documentation"
+
+================================================================================
+STUDENT INFORMATION:
+================================================================================
+
+Name: Saikat
+Student ID: 2207002
+Course: Database & Concurrency Integration Assignment
+Lab Session: Week of Nov 25, 2025
+
+Features Implemented:
+  ✓ Database (SQLite)
+  ✓ JSON (Gson)
+  ✓ Observable (JavaFX Collections)
+  ✓ Concurrency (ExecutorService, CompletableFuture)
+
+Test Status: ALL PASSED ✓
+Submission Status: READY FOR LAB
+
+================================================================================
+END OF QUICK REFERENCE GUIDE
+================================================================================

@@ -1,0 +1,499 @@
+import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.TextAlignment;
+import javafx.stage.Stage;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+
+/**
+ * JavaFX Main Application for CGPA Calculator
+ * Student: Saikat (ID: 2207002)
+ */
+public class Main extends Application {
+    private GPACalculator calculator = new GPACalculator();
+    private TableView<Course> courseTable;
+    private ObservableList<Course> courseData;
+    private Label gpaLabel;
+    private Label totalCreditsLabel;
+    private Label classificationLabel;
+    private Label targetCreditsLabel;
+    private Button calculateGPAButton;
+    private Stage primaryStage;
+    private double targetTotalCredits = 12.0; // Default target credits
+    
+    @Override
+    public void start(Stage primaryStage) {
+        this.primaryStage = primaryStage;
+        primaryStage.setTitle("CGPA Calculator - Saikat (2207002)");
+        
+        // Initialize observable list
+        courseData = FXCollections.observableArrayList();
+        
+        // Show home screen first
+        showHomeScreen();
+        primaryStage.show();
+    }
+    
+    /**
+     * Show the home/welcome screen
+     */
+    private void showHomeScreen() {
+        VBox homeLayout = new VBox(30);
+        homeLayout.setAlignment(Pos.CENTER);
+        homeLayout.setPadding(new Insets(50));
+        homeLayout.setStyle("-fx-background: linear-gradient(to bottom right, #667eea, #764ba2);");
+        
+        // Welcome title
+        Label welcomeLabel = new Label("Welcome to");
+        welcomeLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 28));
+        welcomeLabel.setTextFill(Color.WHITE);
+        
+        Label titleLabel = new Label("STUDENT GRADING SYSTEM");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 42));
+        titleLabel.setTextFill(Color.WHITE);
+        
+        Label subtitleLabel = new Label("GPA Calculator");
+        subtitleLabel.setFont(Font.font("Arial", FontWeight.LIGHT, 32));
+        subtitleLabel.setTextFill(Color.rgb(255, 255, 255, 0.9));
+        
+        Label studentLabel = new Label("By: Saikat (ID: 2207002)");
+        studentLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 18));
+        studentLabel.setTextFill(Color.rgb(255, 255, 255, 0.8));
+        
+        // Start button
+        Button startButton = new Button("Start GPA Calculator");
+        startButton.setFont(Font.font("Arial", FontWeight.BOLD, 20));
+        startButton.setStyle("-fx-background-color: white; -fx-text-fill: #667eea; " +
+                            "-fx-padding: 20 50; -fx-background-radius: 30; " +
+                            "-fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);");
+        startButton.setOnMouseEntered(e -> startButton.setStyle(
+            "-fx-background-color: #f0f0f0; -fx-text-fill: #667eea; " +
+            "-fx-padding: 20 50; -fx-background-radius: 30; -fx-cursor: hand; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 15, 0, 0, 7);"));
+        startButton.setOnMouseExited(e -> startButton.setStyle(
+            "-fx-background-color: white; -fx-text-fill: #667eea; " +
+            "-fx-padding: 20 50; -fx-background-radius: 30; -fx-cursor: hand; " +
+            "-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.3), 10, 0, 0, 5);"));
+        startButton.setOnAction(e -> showMainScreen());
+        
+        // Instructions
+        Label instructionLabel = new Label("Track your academic performance with ease");
+        instructionLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 16));
+        instructionLabel.setTextFill(Color.rgb(255, 255, 255, 0.7));
+        
+        homeLayout.getChildren().addAll(
+            welcomeLabel, titleLabel, subtitleLabel,
+            new Region(),
+            startButton,
+            new Region(),
+            instructionLabel, studentLabel
+        );
+        
+        Scene homeScene = new Scene(homeLayout, 1000, 600);
+        primaryStage.setScene(homeScene);
+    }
+    
+    /**
+     * Show the main course entry screen
+     */
+    private void showMainScreen() {
+        // Create main layout
+        BorderPane root = new BorderPane();
+        root.setStyle("-fx-background-color: #f5f5f5;");
+        
+        // Top: Header
+        VBox header = createHeader();
+        root.setTop(header);
+        
+        // Center: Course Table
+        VBox centerBox = createCenterContent();
+        root.setCenter(centerBox);
+        
+        // Right: Input Panel
+        VBox inputPanel = createInputPanel();
+        root.setRight(inputPanel);
+        
+        // Bottom: GPA Display
+        HBox bottomPanel = createBottomPanel();
+        root.setBottom(bottomPanel);
+        
+        // Create scene
+        Scene scene = new Scene(root, 1200, 700);
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+    
+    /**
+     * Create header section
+     */
+    private VBox createHeader() {
+        VBox header = new VBox();
+        header.setAlignment(Pos.CENTER);
+        header.setPadding(new Insets(20));
+        header.setStyle("-fx-background-color: linear-gradient(to right, #667eea, #764ba2);");
+        
+        Label titleLabel = new Label("CGPA CALCULATOR");
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 32));
+        titleLabel.setTextFill(Color.WHITE);
+        
+        Label subtitleLabel = new Label("By: Saikat (ID: 2207002)");
+        subtitleLabel.setFont(Font.font("Arial", FontWeight.NORMAL, 16));
+        subtitleLabel.setTextFill(Color.WHITE);
+        
+        header.getChildren().addAll(titleLabel, subtitleLabel);
+        return header;
+    }
+    
+    /**
+     * Create center content with course table
+     */
+    private VBox createCenterContent() {
+        VBox centerBox = new VBox(10);
+        centerBox.setPadding(new Insets(20));
+        
+        Label tableTitle = new Label("📚 Courses List");
+        tableTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        
+        // Create table
+        courseTable = new TableView<>();
+        courseTable.setItems(courseData);
+        courseTable.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        
+        // Course Name Column
+        TableColumn<Course, String> nameCol = new TableColumn<>("Course Name");
+        nameCol.setCellValueFactory(new PropertyValueFactory<>("courseName"));
+        nameCol.setMinWidth(200);
+        
+        // Grade Column
+        TableColumn<Course, String> gradeCol = new TableColumn<>("Grade");
+        gradeCol.setCellValueFactory(new PropertyValueFactory<>("grade"));
+        gradeCol.setMinWidth(80);
+        
+        // Credit Hours Column
+        TableColumn<Course, Double> creditCol = new TableColumn<>("Credit Hours");
+        creditCol.setCellValueFactory(new PropertyValueFactory<>("creditHours"));
+        creditCol.setMinWidth(100);
+        
+        // Grade Point Column
+        TableColumn<Course, Double> gradePointCol = new TableColumn<>("Grade Point");
+        gradePointCol.setCellValueFactory(new PropertyValueFactory<>("gradePoint"));
+        gradePointCol.setMinWidth(100);
+        
+        // Quality Points Column
+        TableColumn<Course, Double> qualityPointsCol = new TableColumn<>("Quality Points");
+        qualityPointsCol.setCellValueFactory(new PropertyValueFactory<>("qualityPoints"));
+        qualityPointsCol.setMinWidth(120);
+        
+        courseTable.getColumns().addAll(nameCol, gradeCol, creditCol, gradePointCol, qualityPointsCol);
+        
+        // Action buttons
+        HBox actionButtons = new HBox(10);
+        actionButtons.setAlignment(Pos.CENTER);
+        actionButtons.setPadding(new Insets(10, 0, 0, 0));
+        
+        Button removeBtn = new Button("🗑️ Remove Selected");
+        removeBtn.setStyle("-fx-background-color: #e74c3c; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20;");
+        removeBtn.setOnAction(e -> removeSelectedCourse());
+        
+        Button clearBtn = new Button("🧹 Clear All");
+        clearBtn.setStyle("-fx-background-color: #e67e22; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20;");
+        clearBtn.setOnAction(e -> clearAllCourses());
+        
+        Button gradeScaleBtn = new Button("📊 View Grade Scale");
+        gradeScaleBtn.setStyle("-fx-background-color: #3498db; -fx-text-fill: white; -fx-font-size: 14px; -fx-padding: 10 20;");
+        gradeScaleBtn.setOnAction(e -> showGradeScale());
+        
+        actionButtons.getChildren().addAll(removeBtn, clearBtn, gradeScaleBtn);
+        
+        centerBox.getChildren().addAll(tableTitle, courseTable, actionButtons);
+        return centerBox;
+    }
+    
+    /**
+     * Create input panel for adding courses
+     */
+    private VBox createInputPanel() {
+        VBox inputPanel = new VBox(15);
+        inputPanel.setPadding(new Insets(20));
+        inputPanel.setStyle("-fx-background-color: white; -fx-border-color: #ddd; -fx-border-width: 0 0 0 2;");
+        inputPanel.setPrefWidth(350);
+        
+        Label inputTitle = new Label("➕ Add New Course");
+        inputTitle.setFont(Font.font("Arial", FontWeight.BOLD, 18));
+        
+        // Course Name
+        Label nameLabel = new Label("Course Name:");
+        nameLabel.setFont(Font.font("Arial", FontWeight.BOLD, 13));
+        TextField courseNameField = new TextField();
+        courseNameField.setPromptText("e.g., Data Structures");
+        courseNameField.setStyle("-fx-font-size: 13px; -fx-padding: 8;");
+        
+        // Grade
+        Label gradeLabel = new Label("Letter Grade:");
+        gradeLabel.setFont(Font.font("Arial", FontWeight.BOLD, 13));
+        ComboBox<String> gradeComboBox = new ComboBox<>();
+        gradeComboBox.setItems(FXCollections.observableArrayList(
+            "A+", "A", "A-", "B+", "B", "B-", "C+", "C", "C-", "D+", "D", "F"
+        ));
+        gradeComboBox.setPromptText("Select grade");
+        gradeComboBox.setStyle("-fx-font-size: 13px;");
+        gradeComboBox.setMaxWidth(Double.MAX_VALUE);
+        
+        // Credit Hours
+        Label creditLabel = new Label("Credit Hours:");
+        creditLabel.setFont(Font.font("Arial", FontWeight.BOLD, 13));
+        TextField creditField = new TextField();
+        creditField.setPromptText("e.g., 3.0");
+        creditField.setStyle("-fx-font-size: 13px; -fx-padding: 8;");
+        
+        // Add Button
+        Button addButton = new Button("✓ Add Course");
+        addButton.setStyle("-fx-background-color: #27ae60; -fx-text-fill: white; -fx-font-size: 15px; " +
+                          "-fx-font-weight: bold; -fx-padding: 12 30; -fx-cursor: hand;");
+        addButton.setMaxWidth(Double.MAX_VALUE);
+        addButton.setOnAction(e -> {
+            addCourse(courseNameField, gradeComboBox, creditField);
+        });
+        
+        // Clear Form Button
+        Button clearFormBtn = new Button("Clear Form");
+        clearFormBtn.setStyle("-fx-background-color: #95a5a6; -fx-text-fill: white; -fx-font-size: 13px; -fx-padding: 8 20;");
+        clearFormBtn.setMaxWidth(Double.MAX_VALUE);
+        clearFormBtn.setOnAction(e -> {
+            courseNameField.clear();
+            gradeComboBox.setValue(null);
+            creditField.clear();
+        });
+        
+        Separator separator = new Separator();
+        
+        inputPanel.getChildren().addAll(
+            inputTitle,
+            new Separator(),
+            nameLabel, courseNameField,
+            gradeLabel, gradeComboBox,
+            creditLabel, creditField,
+            addButton,
+            clearFormBtn
+        );
+        
+        return inputPanel;
+    }
+    
+    /**
+     * Create bottom panel for GPA display
+     */
+    private HBox createBottomPanel() {
+        HBox bottomPanel = new HBox(30);
+        bottomPanel.setAlignment(Pos.CENTER);
+        bottomPanel.setPadding(new Insets(25));
+        bottomPanel.setStyle("-fx-background-color: linear-gradient(to right, #11998e, #38ef7d);");
+        
+        VBox totalCoursesBox = createInfoBox("Total Courses", "0", "👨‍🎓");
+        VBox totalCreditsBox = createInfoBox("Total Credits", "0.0", "📖");
+        VBox gpaBox = createInfoBox("GPA/CGPA", "0.00", "🎯");
+        VBox classificationBox = createInfoBox("Classification", "N/A", "🏆");
+        
+        totalCreditsLabel = (Label) totalCreditsBox.getChildren().get(1);
+        gpaLabel = (Label) gpaBox.getChildren().get(1);
+        classificationLabel = (Label) classificationBox.getChildren().get(1);
+        
+        bottomPanel.getChildren().addAll(totalCoursesBox, totalCreditsBox, gpaBox, classificationBox);
+        return bottomPanel;
+    }
+    
+    /**
+     * Create info box for bottom panel
+     */
+    private VBox createInfoBox(String title, String value, String icon) {
+        VBox box = new VBox(5);
+        box.setAlignment(Pos.CENTER);
+        
+        Label iconLabel = new Label(icon);
+        iconLabel.setFont(Font.font(24));
+        
+        Label titleLabel = new Label(title);
+        titleLabel.setFont(Font.font("Arial", FontWeight.BOLD, 14));
+        titleLabel.setTextFill(Color.WHITE);
+        
+        Label valueLabel = new Label(value);
+        valueLabel.setFont(Font.font("Arial", FontWeight.BOLD, 24));
+        valueLabel.setTextFill(Color.WHITE);
+        
+        box.getChildren().addAll(iconLabel, valueLabel, titleLabel);
+        return box;
+    }
+    
+    /**
+     * Add course from input fields
+     */
+    private void addCourse(TextField nameField, ComboBox<String> gradeBox, TextField creditField) {
+        String courseName = nameField.getText().trim();
+        String grade = gradeBox.getValue();
+        String creditText = creditField.getText().trim();
+        
+        if (courseName.isEmpty() || grade == null || creditText.isEmpty()) {
+            showAlert("Input Error", "Please fill in all fields!", Alert.AlertType.WARNING);
+            return;
+        }
+        
+        try {
+            double creditHours = Double.parseDouble(creditText);
+            if (creditHours <= 0) {
+                showAlert("Invalid Input", "Credit hours must be positive!", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            Course course = new Course(courseName, grade, creditHours);
+            if (course.getGradePoint() < 0) {
+                showAlert("Invalid Grade", "Invalid grade selected!", Alert.AlertType.ERROR);
+                return;
+            }
+            
+            calculator.addCourse(course);
+            courseData.add(course);
+            
+            // Clear form
+            nameField.clear();
+            gradeBox.setValue(null);
+            creditField.clear();
+            
+            updateGPADisplay();
+            showAlert("Success", "Course added successfully!", Alert.AlertType.INFORMATION);
+            
+        } catch (NumberFormatException e) {
+            showAlert("Invalid Input", "Please enter a valid number for credit hours!", Alert.AlertType.ERROR);
+        }
+    }
+    
+    /**
+     * Remove selected course
+     */
+    private void removeSelectedCourse() {
+        Course selected = courseTable.getSelectionModel().getSelectedItem();
+        if (selected == null) {
+            showAlert("No Selection", "Please select a course to remove!", Alert.AlertType.WARNING);
+            return;
+        }
+        
+        int index = courseData.indexOf(selected);
+        calculator.removeCourse(index);
+        courseData.remove(selected);
+        updateGPADisplay();
+    }
+    
+    /**
+     * Clear all courses
+     */
+    private void clearAllCourses() {
+        if (courseData.isEmpty()) {
+            showAlert("No Courses", "There are no courses to clear!", Alert.AlertType.INFORMATION);
+            return;
+        }
+        
+        Alert confirm = new Alert(Alert.AlertType.CONFIRMATION);
+        confirm.setTitle("Confirm Clear");
+        confirm.setHeaderText("Clear All Courses");
+        confirm.setContentText("Are you sure you want to remove all courses?");
+        
+        if (confirm.showAndWait().get() == ButtonType.OK) {
+            calculator.clearCourses();
+            courseData.clear();
+            updateGPADisplay();
+        }
+    }
+    
+    /**
+     * Update GPA display
+     */
+    private void updateGPADisplay() {
+        double gpa = calculator.calculateGPA();
+        double totalCredits = calculator.getTotalCreditHours();
+        
+        // Update total courses label (find it in the bottom panel)
+        HBox bottomPanel = (HBox) ((BorderPane) courseTable.getScene().getRoot()).getBottom();
+        VBox totalCoursesBox = (VBox) bottomPanel.getChildren().get(0);
+        Label totalCoursesValue = (Label) totalCoursesBox.getChildren().get(1);
+        totalCoursesValue.setText(String.valueOf(calculator.getCourseCount()));
+        
+        totalCreditsLabel.setText(String.format("%.1f", totalCredits));
+        gpaLabel.setText(String.format("%.2f", gpa));
+        
+        String classification = getClassification(gpa);
+        classificationLabel.setText(classification);
+    }
+    
+    /**
+     * Get classification based on GPA
+     */
+    private String getClassification(double gpa) {
+        if (calculator.getCourseCount() == 0) return "N/A";
+        if (gpa >= 3.75) return "First Class (Distinction)";
+        if (gpa >= 3.5) return "First Class";
+        if (gpa >= 3.0) return "Second Class (Upper)";
+        if (gpa >= 2.5) return "Second Class (Lower)";
+        if (gpa >= 2.0) return "Pass";
+        return "Fail";
+    }
+    
+    /**
+     * Show grade scale dialog
+     */
+    private void showGradeScale() {
+        Alert alert = new Alert(Alert.AlertType.INFORMATION);
+        alert.setTitle("Grading Scale");
+        alert.setHeaderText("GPA Grading Scale and Classification");
+        
+        String content = """
+            GRADE SCALE:
+            A+, A  →  4.0
+            A-     →  3.7
+            B+     →  3.3
+            B      →  3.0
+            B-     →  2.7
+            C+     →  2.3
+            C      →  2.0
+            C-     →  1.7
+            D+     →  1.3
+            D      →  1.0
+            F      →  0.0
+            
+            CLASSIFICATION:
+            3.75 - 4.00: First Class (Distinction)
+            3.50 - 3.74: First Class
+            3.00 - 3.49: Second Class (Upper Division)
+            2.50 - 2.99: Second Class (Lower Division)
+            2.00 - 2.49: Pass
+            Below 2.00:  Fail
+            """;
+        
+        alert.setContentText(content);
+        alert.getDialogPane().setMinWidth(450);
+        alert.showAndWait();
+    }
+    
+    /**
+     * Show alert dialog
+     */
+    private void showAlert(String title, String message, Alert.AlertType type) {
+        Alert alert = new Alert(type);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        alert.setContentText(message);
+        alert.showAndWait();
+    }
+    
+    public static void main(String[] args) {
+        launch(args);
+    }
+}
